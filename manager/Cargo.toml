@@ -1,0 +1,20 @@
+[package]
+name = "manager"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "manager"
+path = "src/lib.rs"
+
+[[bin]]
+name = "manager"
+path = "src/bin/manager.rs"
+
+[dependencies]
+env_logger = "0.10.0"
+log = "0.4.14"
+toml_edit = { version = "0.16.2", features = ["easy", "serde"] }
+serde = { version = "1.0.145", features = ["derive"] }

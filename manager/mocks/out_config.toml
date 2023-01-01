@@ -1,0 +1,104 @@
+version = 2
+root = "/var/data/cripersistentstorage"
+state = "/run/containerd"
+oom_score = 0
+
+[grpc]
+address = "/run/containerd/containerd.sock"
+uid = 0
+gid = 0
+max_recv_message_size = 16777216
+max_send_message_size = 16777216
+
+[debug]
+address = ""
+uid = 0
+gid = 0
+level = ""
+
+[metrics]
+address = "10.135.106.154:10210"
+grpc_histogram = false
+
+[cgroup]
+path = "/podruntime/runtime"
+
+[plugins."io.containerd.monitor.v1.cgroups"]
+no_prometheus = false
+
+[plugins."io.containerd.grpc.v1.cri"]
+disable_tcp_service = true
+stream_server_address = "127.0.0.1"
+stream_server_port = "0"
+stream_idle_timeout = "15m"
+enable_selinux = false
+selinux_category_range = 1024
+sandbox_image = "de.icr.io/armada-master/pause:3.8"
+stats_collect_period = 10
+systemd_cgroup = false
+enable_tls_streaming = false
+tolerate_missing_hugetlb_controller = true
+ignore_image_defined_volumes = false
+
+[plugins."io.containerd.grpc.v1.cri".containerd]
+snapshotter = "overlayfs"
+default_runtime_name = "runc"
+no_pivot = false
+disable_snapshot_annotations = true
+discard_unpacked_layers = false
+
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+runtime_type = "io.containerd.runc.v2"
+pod_annotations = []
+container_annotations = []
+privileged_without_host_devices = false
+base_runtime_spec = ""
+
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+NoPivotRoot = false
+NoNewKeyring = false
+ShimCgroup = ""
+IoUid = 0
+IoGid = 0
+BinaryName = ""
+Root = ""
+CriuPath = ""
+SystemdCgroup = false
+
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.crun]
+runtime_type = "io.containerd.runc.v2"
+privileged_without_host_devices = false
+pod_annotations = [
+    "*.wasm.*",
+    "module.wasm.image/*",
+    "*.module.wasm.image",
+    "module.wasm.image/variant.*",
+]
+
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.crun.options]
+BinaryName = "/usr/local/sbin/crun"
+
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.untrusted]
+runtime_type = "io.containerd.runc.v2"
+pod_annotations = []
+container_annotations = []
+privileged_without_host_devices = false
+
+[plugins."io.containerd.grpc.v1.cri".cni]
+bin_dir = "/opt/cni/bin"
+conf_dir = "/etc/cni/net.d"
+max_conf_num = 1
+conf_template = ""
+
+[plugins."io.containerd.grpc.v1.cri".registry]
+config_path = "/etc/containerd/certs.d"
+
+[plugins."io.containerd.service.v1.diff-service"]
+default = ["walking"]
+
+[plugins."io.containerd.gc.v1.scheduler"]
+pause_threshold = 0.02
+deletion_threshold = 0
+mutation_threshold = 100
+schedule_delay = "0s"
+startup_delay = "100ms"

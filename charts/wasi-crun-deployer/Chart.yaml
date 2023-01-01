@@ -1,0 +1,38 @@
+apiVersion: v2
+name: wasi-crun-deployer
+description: A helm chart to deploy a WASI enabled crun.
+type: application
+keywords:
+  - wasi
+  - wasm
+  - crun
+sources:
+  - https://github.com/uirlis/wasi-core-deployer
+
+type: application
+
+version: v1.0.0
+
+appVersion: "v1.0.0"
+
+# icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
+
+maintainers:
+  - name: No9
+    email: anton@venshare.com
+    url: https://github.com/No9/
+
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description:  Experimental event file creation
+      links:
+        - name: GitHub PR
+          url: https://github.com/No9/wasi-core-deployer/pull/1
+  artifacthub.io/images: |
+    - name: wasi-crun-deployer
+      image: quay.io/uirlis/wasi-core-deployer:v1.0.0
+  artifacthub.io/license: MIT
+  artifacthub.io/signKey: |
+    fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
+    url: https://keybase.io/antonwhalley/pgp_keys.asc

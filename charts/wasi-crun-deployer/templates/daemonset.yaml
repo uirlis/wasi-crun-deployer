@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Values.daemonset.name }}
+spec:
+  selector:
+    matchLabels:
+      name: {{ .Values.daemonset.label }}
+  template:
+    metadata:
+      labels:
+        name: {{ .Values.daemonset.label }}
+    spec:
+      containers:
+      - name: wasi-crun-container
+        image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+          requests:
+            memory: {{ .Values.resources.requests.memory }}
+            cpu: {{ .Values.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: oci-volume
+          mountPath:  /host_oci
+          mountPropagation: Bidirectional
+        - name: lib-volume
+          mountPath:  /host_lib
+          mountPropagation: Bidirectional
+        - name: containerd-volume
+          mountPath:  /host_containerd
+          mountPropagation: Bidirectional
+        env:
+          - name: VENDOR
+            value: {{ .Values.daemonset.vendor | quote }}
+          - name: WASI_LIB_LOCATION
+            value: {{ .Values.daemonset.wasiLibLocation | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.daemonset.logLevel | quote }}
+          - name: OCI_RUN_LOCATION
+            value: {{ .Values.daemonset.ociLocation | quote }}
+          - name: OCI_NAME
+            value: {{ .Values.daemonset.ociName | quote }}
+        command: ["/app/manager"]
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/app/remove.sh"]
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "wasi-crun-deployer.serviceAccountName" . }}
+      volumes:
+      - name: oci-volume
+        hostPath:
+          path: {{ .Values.daemonset.ociLocation }}
+          type: Directory
+      - name: lib-volume
+        hostPath:
+          path: {{ .Values.daemonset.libLocation }}
+          type: Directory
+      - name: containerd-volume
+        hostPath:
+          path: {{ .Values.daemonset.containerdLocation }}
+          type: Directory

@@ -1,0 +1,3 @@
+1. Test the deployment by running
+
+  kubectl run -it --restart=Never wasi-demo --image=docker.io/wasmedge/example-wasi:latest --annotations="module.wasm.image/variant=compat-smart" --overrides='{"kind":"Pod", "apiVersion":"v1", "spec": {"hostNetwork": true, "runtimeClassName": "crun"}}' /wasi_example_main.wasm 50000000
