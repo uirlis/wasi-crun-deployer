@@ -23,7 +23,12 @@ The deployment is performed by mounting 3 locations on each node:
    ```toml
     [plugins.cri.containerd.runtimes.crun]
     runtime_type = "io.containerd.runc.v2"
-    pod_annotations = ["*.wasm.*", "wasm.*", "module.wasm.image/*", "*.module.wasm.image", "module.wasm.image/variant.*"]
+    pod_annotations = [
+    "*.wasm.*",
+    "module.wasm.image/*",
+    "*.module.wasm.image",
+    "module.wasm.image/variant.*",
+    ]
     privileged_without_host_devices = false
       [plugins.cri.containerd.runtimes.crun.options]
       BinaryName = "/usr/local/sbin/crun"
@@ -60,14 +65,24 @@ The deployment is performed by mounting 3 locations on each node:
 Run the following demo image using kubectl
 
 ```
-kubectl run -it --restart=Never wasi-demo --image=docker.io/wasmedge/example-wasi:latest --annotations="module.wasm.image/variant=compat-smart" --overrides='{"kind":"Pod", "apiVersion":"v1", "spec": {"hostNetwork": true, "runtimeClassName": "crun"}}' /wasi_example_main.wasm 50000000
+kubectl run -it --restart=Never wasi-demo --image=docker.io/wasmedge/example-wasi:latest  \
+--annotations="module.wasm.image/variant=compat-smart" \
+--overrides='{"kind":"Pod", "apiVersion":"v1", "spec": \
+{"hostNetwork": true, "runtimeClassName": "crun"}}' \
+/wasi_example_main.wasm 50000000
 ```
 
 This will output:
 
 ```
 Random number: -1184619679
-Random bytes: [188, 162, 226, 6, 56, 76, 130, 89, 149, 165, 30, 171, 6, 234, 228, 118, 217, 167, 176, 170, 199, 202, 10, 30, 76, 41, 106, 204, 253, 25, 122, 86, 218, 192, 37, 33, 80, 144, 161, 134, 21, 104, 1, 205, 78, 56, 125, 249, 123, 20, 74, 81, 100, 76, 234, 234, 239, 247, 251, 47, 96, 245, 139, 169, 129, 247, 205, 249, 188, 111, 77, 134, 254, 107, 200, 77, 4, 205, 241, 37, 131, 9, 29, 137, 106, 22, 222, 89, 18, 74, 101, 227, 14, 39, 176, 195, 51, 156, 101, 225, 87, 254, 97, 115, 161, 34, 180, 243, 238, 145, 67, 36, 218, 175, 202, 93, 185, 89, 188, 129, 197, 167, 255, 5, 97, 144, 171, 132]
+Random bytes: [188, 162, 226, 6, 56, 76, 130, 89, 149, 165, 30, 171, 6, 234, 228, 118, 217,
+167, 176, 170, 199, 202, 10, 30, 76, 41, 106, 204, 253, 25, 122, 86, 218, 192, 37, 33, 80,
+144, 161, 134, 21, 104, 1, 205, 78, 56, 125, 249, 123, 20, 74, 81, 100, 76, 234, 234, 239,
+247, 251, 47, 96, 245, 139, 169, 129, 247, 205, 249, 188, 111, 77, 134, 254, 107, 200, 77,
+4, 205, 241, 37, 131, 9, 29, 137, 106, 22, 222, 89, 18, 74, 101, 227, 14, 39, 176, 195, 51,
+156, 101, 225, 87, 254, 97, 115, 161, 34, 180, 243, 238, 145, 67, 36, 218, 175, 202, 93, 185,
+89, 188, 129, 197, 167, 255, 5, 97, 144, 171, 132]
 Printed from wasi: This is from a main function
 This is from a main function
 The env vars are as follows.
