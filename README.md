@@ -2,6 +2,9 @@
 
 A helm chart to deploy an OCI compatible runtime with Web Assembly capabilities into kubernetes to enable the execution of `.wasm` files.
 
+[![build status](https://github.com/uirlis/wasi-crun-deployer/workflows/CI/badge.svg)](https://github.com/uirlis/wasi-crun-deployer/actions)
+[![Docker Repository on Quay](https://quay.io/repository/uirlis/wasi-crun-deployer/status "Docker Repository on Quay")](https://quay.io/repository/uirlis/wasi-crun-deployer)
+
 ## Overview
 
 This project creates a build of the latest [WASMEdge](https://github.com/WasmEdge/WasmEdge) enabled [crun release](https://github.com/containers/crun).
