@@ -1,6 +1,6 @@
 # wasi-crun-deployer
 
-A helm chart to deploy an OCI compatible runtime with Web Assembly capabilities into kubernetes to enable the execution of `.wasm` files.
+A helm chart to deploy an OCI compatible runtime with Web Assembly capabilities into a kubernetes cluster to enable the developers to run `.wasm` files.
 
 [![build status](https://github.com/uirlis/wasi-crun-deployer/workflows/CI/badge.svg)](https://github.com/uirlis/wasi-crun-deployer/actions)
 [![Docker Repository on Quay](https://quay.io/repository/uirlis/wasi-crun-deployer/status "Docker Repository on Quay")](https://quay.io/repository/uirlis/wasi-crun-deployer)
