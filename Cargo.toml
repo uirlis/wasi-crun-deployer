@@ -1,0 +1,11 @@
+
+[workspace]
+
+members = [
+"manager"
+]
+resolver = "2"
+
+[profile.release]
+debug = true
+panic = "abort"

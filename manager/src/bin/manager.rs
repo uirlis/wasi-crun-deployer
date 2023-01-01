@@ -8,8 +8,7 @@ static OCI_BASE: &str = "host_oci";
 static LIB_BASE: &str = "host_lib";
 
 fn main() -> Result<(), std::io::Error> {
-    let args: Vec<String> = env::args().collect();
-    if args.len() >= 2 {
+    if env::args().count() >= 2 {
         println!("Manager 0.1 by Anton Whalley");
         std::process::exit(0);
     }
