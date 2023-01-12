@@ -34,6 +34,46 @@ pub fn update_containerd_config(path: &str) -> Result<toml_edit::Document, std::
     Ok(conf)
 }
 
+pub fn update_crio_config(path: &str) -> Result<toml_edit::Document, std::io::Error> {
+    info!("Generating crio config");
+    let conf = generate_crio_config(path)?;
+
+    let value: toml_edit::easy::Value =
+        toml_edit::easy::from_str(conf.to_string().as_str()).unwrap();
+    let result = toml_edit::easy::to_string_pretty(&value).unwrap();
+    info!("Starting replace..");
+    let destination = path.replace(".conf", ".conf.bak");
+    info!("Copying from {} to {}", path, destination);
+    fs::copy(path, destination)?;
+    let mut f = std::fs::OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(path)?;
+    f.write_all(result.as_bytes())?;
+    f.flush()?;
+    Ok(conf)
+}
+
+pub fn generate_crio_config(path: &str) -> Result<toml_edit::Document, std::io::Error> {
+    info!("Reading location: {}", path);
+    let content = std::fs::read_to_string(path)?;
+
+    let mut conf = content.parse::<Document>().expect("invalid doc");
+    // TODO: Look at workloads table annotations?
+    // let mut poda = Array::default();
+    // poda.push("*.wasm.*");
+    // poda.push("module.wasm.image/*");
+    // poda.push("*.module.wasm.image");
+    // poda.push("module.wasm.image/variant.*");
+
+    let mut table = Table::default();
+    table["runtime_type"] = value("oci");
+    table["runtime_path"] = value("/usr/local/sbin/crun");
+    table["runtime_root"] = value("/run/crun");
+    conf["crio"]["runtime"]["runtimes"]["crun"] = Item::Table(table);
+    Ok(conf)
+}
+
 pub fn generate_containerd_config(path: &str) -> Result<toml_edit::Document, std::io::Error> {
     let content = std::fs::read_to_string(path)?;
 
@@ -66,9 +106,74 @@ pub fn restore_containerd_config(path: &str) -> Result<(), std::io::Error> {
     Ok(())
 }
 
+pub fn restore_crio_config(path: &str) -> Result<(), std::io::Error> {
+    let from = path.replace(".conf", ".conf.bak");
+    info!("Copying from {} to {}", from, path);
+    fs::copy(from, path)?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn update_crio_config_test() {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/mocks/in_crio.conf");
+        let backup_path = concat!(env!("CARGO_MANIFEST_DIR"), "/mocks/in_crio.conf.bak");
+        let new_compare = concat!(env!("CARGO_MANIFEST_DIR"), "/mocks/out_crio.conf");
+        let old_file_contents =
+            fs::read_to_string(path).expect("Should have been able to read the file");
+
+        update_crio_config(path).unwrap();
+
+        let new_file_contents =
+            fs::read_to_string(path).expect("Should have been able to read the new_file_contents");
+        let new_compare_contents = fs::read_to_string(new_compare)
+            .expect("Should have been able to read the new_compare_contents");
+        let backup_file_contents = fs::read_to_string(backup_path)
+            .expect("Should have been able to read the backup_file_contents");
+
+        // Test the new file is as expected
+        assert_eq!(
+            new_file_contents, new_compare_contents,
+            "Test the new file is as expected"
+        );
+
+        // Test the backup is part of the orginal file
+        assert_eq!(
+            old_file_contents, backup_file_contents,
+            "Test the backup is part of the orginal file"
+        );
+
+        restore_crio_config(path).unwrap();
+        let restored_file_contents = fs::read_to_string(path)
+            .expect("Should have been able to read the restored_file_contents");
+        assert_eq!(
+            old_file_contents, restored_file_contents,
+            "Test the restoration"
+        );
+
+        fs::remove_file(backup_path).expect("Failed to remove tmp backup file");
+    }
+
+    #[test]
+    fn generate_crio_config_test() {
+        let test_file = concat!(env!("CARGO_MANIFEST_DIR"), "/mocks/in_crio.conf");
+        let conf = generate_crio_config(test_file).unwrap();
+        assert_eq!(
+            conf["crio"]["runtime"]["runtimes"]["crun"]["runtime_type"].as_str(),
+            Some("oci")
+        );
+        assert_eq!(
+            conf["crio"]["runtime"]["runtimes"]["crun"]["runtime_path"].as_str(),
+            Some("/usr/local/sbin/crun")
+        );
+        assert_eq!(
+            conf["crio"]["runtime"]["runtimes"]["crun"]["runtime_root"].as_str(),
+            Some("/run/crun")
+        );
+    }
     #[test]
     fn update_containerd_config_test() {
         let path = concat!(env!("CARGO_MANIFEST_DIR"), "/mocks/in_config.toml");

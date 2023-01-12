@@ -19,25 +19,14 @@ The deployment is performed by mounting 3 locations on each node:
 
 2. The `/usr/local/sbin` folder to deploy the `crun` executable
 
-3. The `/etc/containerd` folder to add the following to `config.toml`
-   ```toml
-    [plugins.cri.containerd.runtimes.crun]
-    runtime_type = "io.containerd.runc.v2"
-    pod_annotations = [
-    "*.wasm.*",
-    "module.wasm.image/*",
-    "*.module.wasm.image",
-    "module.wasm.image/variant.*",
-    ]
-    privileged_without_host_devices = false
-      [plugins.cri.containerd.runtimes.crun.options]
-      BinaryName = "/usr/local/sbin/crun"
-    ```
+3. The additional runtime is added to either the `crio.conf` or the containerd `config.toml`
+
 ## Supported Versions
 
 * WASMEdge = 0.11.2
 * crun = `main` branch release only (See https://github.com/containers/crun/commit/26fe1383a05279935e67ee31e7ff10c43e7d87ea)
 * IBM Cloud Kubernetes Service >= v1.24.9, Ubuntu 20.04
+* IBM Cloud RedHat OpenShift Kubernetes Service >= v1.24.9, Ubuntu 20.04
 * PRs welcome to support other platforms!
 
 ## Usage
@@ -49,15 +38,18 @@ The deployment is performed by mounting 3 locations on each node:
     ```
     helm install wasi-crun-deployer . --create-namespace --namespace wasiservice
     ```
-1. Restart the containerd service by either [sshing to the boxes](https://cloud.ibm.com/docs/containers?topic=containers-cs_ssh_worker#pod-ssh) (Recommended) and running
+1. Restart the containerd service by running a debug session on the node
 
+    For xKS flavours
     ```
+    kubectl debug node/NODE_NAME
     systemctl restart containerd
     ```
 
-    Or rebooting the worker nodes
+    For OpenShift
     ```
-    ibmcloud oc worker reboot --cluster <cluster_name_or_ID> --worker <worker_name_or_ID>
+    oc debug node/NODE_NAME
+    systemctl restart crio
     ```
 
 ## Validate
@@ -109,7 +101,7 @@ File content is This is in a file
 Below are the intended features in the rough order of execution.
 
 * [x] Deploy onto IBM Cloud IKS
-* [ ] Deploy onto IBM Cloud OpenShift
+* [x] Deploy onto IBM Cloud OpenShift
 * [x] Support for smart annotations for sidecars
 * [ ] Operator Support
 * [ ] Deploy onto Amazon EKS/ROSA

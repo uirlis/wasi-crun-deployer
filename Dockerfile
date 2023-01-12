@@ -27,7 +27,29 @@ RUN ./configure --with-wasmedge
 RUN make
 RUN ./crun --version
 
-FROM registry.access.redhat.com/ubi8/ubi as rhel8builder
+FROM docker.io/rockylinux/rockylinux:8 as rhel8builder
+RUN dnf update -y
+RUN dnf install -y dnf-plugins-core
+RUN dnf config-manager --set-enabled plus
+RUN dnf config-manager --set-enabled devel
+RUN dnf config-manager --set-enabled powertools
+RUN dnf clean all
+RUN dnf update -y
+RUN dnf repolist --all
+RUN dnf -y install epel-release
+
+RUN dnf install -y git python3 which redhat-lsb-core
+RUN curl -sSf https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install.sh | bash -s -- -e all -p /usr/local
+RUN dnf install -y systemd-devel yajl-devel libseccomp-devel pkg-config libgcrypt-devel \
+    glibc-static python3-libmount libtool libcap-devel
+WORKDIR "/"
+RUN git clone --depth 1 --recursive https://github.com/containers/crun.git
+WORKDIR /crun
+RUN ./autogen.sh
+RUN ./configure --with-wasmedge
+RUN make
+RUN ./crun --version
+
 
 RUN yum install -y gcc openssl-devel && \
     rm -rf /var/cache/dnf && \
@@ -44,6 +66,11 @@ RUN cargo build --release
 RUN cargo test --release
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
+
+WORKDIR "/vendor/rhel8"
+
+
+COPY --from=rhel8builder /usr/local/lib/libwasmedge.so.0 /crun/crun ./
 
 WORKDIR "/vendor/ubuntu_20_04"
 COPY --from=ubuntu18builder /WasmEdge/build/lib/api/libwasmedge.so.0 /crun/crun /usr/lib/x86_64-linux-gnu/libyajl.so.2 \

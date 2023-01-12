@@ -3,17 +3,17 @@ replicaCount: 1
 image:
   registry: quay.io
   repository: uirlis/wasi-crun-deployer
-  tag: v0.0.1
+  tag: rhel10
   pullPolicy: Always
 
 daemonset:
   name: "wasi-crun-deployer"
   label: "wasi-crun-ds"
-  vendor: "ubuntu_20_04"
-  libLocation: "/lib"
+  vendor: "rhel8"
+  libLocation: "/usr/lib64"
   logLevel: "info"
   ociLocation: "/usr/local/sbin"
-  configLocation: "/etc/containerd"
+  configLocation: "/etc/crio"
   ociName: "crun"
 
 imagePullSecrets: []
@@ -55,3 +55,7 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+scc:
+  create: true
+  name: "core-dump-admin-privileged"
