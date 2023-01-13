@@ -51,6 +51,11 @@ The deployment is performed by mounting 3 locations on each node:
     oc debug node/NODE_NAME
     systemctl restart crio
     ```
+1. If you are also running knative also patch the knative config
+
+    ```
+    kubectl patch configmap/config-features -n knative-serving --type merge --patch '{"data":{"kubernetes.podspec-runtimeclassname":"enabled"}}'
+    ```
 
 ## Validate
 
