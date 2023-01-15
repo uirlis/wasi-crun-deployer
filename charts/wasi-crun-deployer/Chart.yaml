@@ -31,7 +31,7 @@ annotations:
           url: https://github.com/No9/wasi-core-deployer/pull/1
   artifacthub.io/images: |
     - name: wasi-crun-deployer
-      image: quay.io/uirlis/wasi-core-deployer:v1.0.0
+      image: quay.io/uirlis/wasi-core-deployer:v0.0.2
   artifacthub.io/license: MIT
   artifacthub.io/signKey: |
     fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34

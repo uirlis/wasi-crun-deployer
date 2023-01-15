@@ -3,18 +3,21 @@ replicaCount: 1
 image:
   registry: quay.io
   repository: uirlis/wasi-crun-deployer
-  tag: v0.0.1
+  tag: v0.0.2
   pullPolicy: Always
 
-daemonset:
+job:
   name: "wasi-crun-deployer"
-  label: "wasi-crun-ds"
-  vendor: "ubuntu_20_04"
+  label: "wasi-crun-job"
+  vendor: "ubuntu_18_04"
   libLocation: "/lib"
   logLevel: "info"
   ociLocation: "/usr/local/sbin"
   configLocation: "/etc/containerd"
   ociName: "crun"
+  nodeRoot: "/mnt/node-root"
+  isMicroK8s: false
+  autoRestart: true
 
 imagePullSecrets: []
 nameOverride: ""
@@ -28,16 +31,8 @@ serviceAccount:
 podAnnotations: {}
 
 podSecurityContext: {}
-  # fsGroup: 2000
 
 securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
 
 resources:
   limits:
@@ -55,3 +50,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+scc:
+  create: false

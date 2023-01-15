@@ -13,9 +13,9 @@ This build is then bundled into a vendored container along with an executable to
 
 Finally there is a helm chart to deploy it into managed kubernetes services.
 
-The deployment is performed by mounting 3 locations on each node:
+The deployment is performed copying files to 3 locations on each node:
 
-1. The `/lib` folder to copy the shared objects  `libyajl.so.2` `libwasmedge.so.0` `libLLVM-12.so.1`
+1. The `/lib` folder to copy the shared objects `libwasmedge.so.0`
 
 2. The `/usr/local/sbin` folder to deploy the `crun` executable
 
@@ -25,14 +25,11 @@ The deployment is performed by mounting 3 locations on each node:
 
 * WASMEdge = 0.11.2
 * crun = `main` branch release only (See https://github.com/containers/crun/commit/26fe1383a05279935e67ee31e7ff10c43e7d87ea)
-* IBM Cloud Kubernetes Service >= v1.24.9, Ubuntu 20.04
-* IBM Cloud RedHat OpenShift Kubernetes Service >= v1.24.9, Ubuntu 20.04
+* IBM Cloud Kubernetes Service >= v1.24.9
+* IBM Cloud RedHat OpenShift Kubernetes Service >= v1.24.9
 * PRs welcome to support other platforms!
 
 ## Usage
-
-1. Make sure the cluster is running [Ubuntu 20.04](https://cloud.ibm.com/docs/containers?topic=containers-ubuntu-migrate)
-   This will be the default on IBM Cloud in March 2023
 
 1. Install the chart
     ```
@@ -109,8 +106,7 @@ Below are the intended features in the rough order of execution.
 * [x] Deploy onto IBM Cloud OpenShift
 * [x] Support for smart annotations for sidecars
 * [ ] Operator Support
-* [ ] Deploy onto Amazon EKS/ROSA
-* [ ] Deploy onto Azure AKS/ARO
-* [ ] [Cloud Events](https://cloudevents.io/) Example
-
-GCP unlikely to be supported as it locks down the host file system as read only.
+* [x] Deploy onto Amazon EKS Ubuntu Flavour/ROSA
+* [x] Deploy onto Azure AKS/ARO
+* [x] [Cloud Events](https://cloudevents.io/) Example
+* [ ] Role Back Support

@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  name: {{ .Values.job.name }}
+spec:
+  template:
+    metadata:
+      labels:
+        name: {{ .Values.job.label }}
+        app: {{ .Values.job.name }}
+    spec:
+      restartPolicy: Never
+      hostPID: true
+      volumes:
+        - name: node-root
+          hostPath:
+            path: /
+        - name: entrypoint
+          configMap:
+            name: entrypoint
+            defaultMode: 0744
+      containers:
+        - image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: wasi-crun-init
+          env:
+            - name: VENDOR
+              value: {{ .Values.job.vendor | quote }}
+            - name: LIB_LOCATION
+              value: {{ .Values.job.libLocation | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.job.logLevel | quote }}
+            - name: OCI_LOCATION
+              value: {{ .Values.job.ociLocation | quote }}
+            - name: OCI_NAME
+              value: {{ .Values.job.ociName | quote }}
+            - name: NODE_ROOT
+              value: {{ .Values.job.nodeRoot | quote }}
+            - name: IS_MICROK8S
+              value: {{ .Values.job.isMicroK8s | quote }}
+            - name: AUTO_RESTART
+              value: {{ .Values.job.autoRestart | quote }}
+            - name: CONFIG_LOCATION
+              value: {{ .Values.job.configLocation | quote }}
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: node-root
+              mountPath: /mnt/node-root/
+  backoffLimit: 1
+  {{- with .Values.nodeSelector }}
+  nodeSelector:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- with .Values.affinity }}
+  affinity:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+  tolerations:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
+  # serviceAccountName: {{ include "wasi-crun-deployer.serviceAccountName" . }}

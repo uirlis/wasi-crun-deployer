@@ -20,3 +20,7 @@ NAME          STATUS   AGE   LABELS
 wasi-deploy   Active   25m   kubernetes.io/metadata.name=wasi-deploy,pod-security.kubernetes.io/audit-version=v1.24,pod-security.kubernetes.io/audit=privileged,pod-security.kubernetes.io/enforce-version=v1.24,pod-security.kubernetes.io/enforce=privileged,pod-security.kubernetes.io/warn-version=v1.24,pod-security.kubernetes.io/warn=privileged
 ```
 
+
+```
+kubectl patch configmap/config-features -n knative-serving --type merge --patch '{"data":{"kubernetes.podspec-runtimeclassname":"enabled"}}'
+```

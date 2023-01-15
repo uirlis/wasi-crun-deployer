@@ -1,6 +1,9 @@
-use log::info;
+use log::{debug, info};
 use std::fs;
+use std::io::Read;
 use std::io::Write;
+use std::process::Command;
+use std::process::Stdio;
 use toml_edit::{value, Array, Document, Item, Table};
 
 pub fn copy_to(
@@ -111,6 +114,78 @@ pub fn restore_crio_config(path: &str) -> Result<(), std::io::Error> {
     info!("Copying from {} to {}", from, path);
     fs::copy(from, path)?;
     Ok(())
+}
+
+pub fn restart_oci_runtime(node_root: String, is_micro_k8s: bool, mut oci_runtime: String) -> Result<(), std::io::Error> {
+    let mount_path = format!("-m{}/proc/1/ns/mnt", node_root);
+
+    if is_micro_k8s {
+        oci_runtime = "snap.microk8s.daemon-containerd".to_string();
+    }
+
+    let args = vec![
+        mount_path.as_str(),
+        "--",
+        "systemctl",
+        "restart",
+        oci_runtime.as_str(),
+    ];
+
+    let path = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/kubernetes/bin";
+    let result = run_command_text(args, path);
+    info!("{:?}", result);
+    Ok(())
+}
+
+fn run_command_text(args: Vec<&str>, bin_path: &str) -> Result<String, String> {
+    debug!("running {:?} {:?}", args, bin_path);
+    // nsenter -m/mnt/node-root/proc/1/ns/mnt -- /usr/bin/pkill containerd
+    let cmd = match Command::new("nsenter")
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .args(&args)
+        .spawn()
+    {
+        Ok(v) => v,
+        Err(e) => {
+            return Err(format!("failed to execute nsenter {:?} {}", args, e));
+        }
+    };
+    let waiter = match cmd.wait_with_output() {
+        Ok(v) => v,
+        Err(e) => {
+            return Err(format!("failed to execute nsenter {:?} {}", args, e));
+        }
+    };
+
+    let mut err_str = String::new();
+    match waiter.stderr.as_slice().read_to_string(&mut err_str) {
+        Err(e) => {
+            return Err(format!(
+                "stderr read error - failed to execute nsenter {:?} {}",
+                args, e
+            ));
+        }
+        Ok(_) => {
+            if !err_str.is_empty() {
+                return Err(format!(
+                    "stderr not empty - failed to execute nsenter {:?} {}",
+                    args, err_str
+                ));
+            }
+        }
+    }
+
+    let mut ok_str = String::new();
+    match waiter.stdout.as_slice().read_to_string(&mut ok_str) {
+        Err(e) => {
+            return Err(format!(
+                "stdout error - failed to execute nsenter {:?} {}",
+                args, e
+            ));
+        }
+        Ok(_) => Ok(ok_str),
+    }
 }
 
 #[cfg(test)]
