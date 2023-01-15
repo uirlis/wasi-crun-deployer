@@ -33,22 +33,21 @@ The deployment is performed copying files to 3 locations on each node:
 
 1. Install the chart
     ```
-    helm install wasi-crun-deployer . --create-namespace --namespace wasiservice
+    helm install wasi-crun-deployer . --create-namespace --namespace wasiservice <optional --set job.autoRestart=true> 
     ```
-1. Restart the containerd service by running a debug session on the node
+1. If you didn't set the job.autoRestart you will have to log into the nodes and run either 
 
-    For xKS flavours
-    ```
-    kubectl debug node/NODE_NAME
-    systemctl restart containerd
-    ```
+   Ubuntu
+   ```
+   systemctl restart containerd
+   ```
 
-    For OpenShift
-    ```
-    oc debug node/NODE_NAME
-    systemctl restart crio
-    ```
-1. If you are also running knative also patch the knative config
+   OpenShift
+   ```
+   systemctl restart crio
+   ```
+
+1. If you are running knative also patch the knative config
 
     ```
     kubectl patch configmap/config-features -n knative-serving --type merge --patch '{"data":{"kubernetes.podspec-runtimeclassname":"enabled"}}'

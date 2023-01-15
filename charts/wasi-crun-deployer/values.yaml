@@ -17,7 +17,7 @@ job:
   ociName: "crun"
   nodeRoot: "/mnt/node-root"
   isMicroK8s: false
-  autoRestart: true
+  autoRestart: false
 
 imagePullSecrets: []
 nameOverride: ""

@@ -116,7 +116,11 @@ pub fn restore_crio_config(path: &str) -> Result<(), std::io::Error> {
     Ok(())
 }
 
-pub fn restart_oci_runtime(node_root: String, is_micro_k8s: bool, mut oci_runtime: String) -> Result<(), std::io::Error> {
+pub fn restart_oci_runtime(
+    node_root: String,
+    is_micro_k8s: bool,
+    mut oci_runtime: String,
+) -> Result<(), std::io::Error> {
     let mount_path = format!("-m{}/proc/1/ns/mnt", node_root);
 
     if is_micro_k8s {

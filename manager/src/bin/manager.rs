@@ -20,9 +20,21 @@ fn main() -> Result<(), std::io::Error> {
     // Forcing unwraps here as these values should be set and a failure will leave the node unusable
     let vendor = env::var("VENDOR").expect("VENDOR");
     let node_root = env::var("NODE_ROOT").expect("NODE_ROOT");
-    let lib_location  = format!("{}{}", node_root, env::var("LIB_LOCATION").expect("LIB_LOCATION"));
-    let config_location  = format!("{}{}", node_root, env::var("CONFIG_LOCATION").expect("CONFIG_LOCATION"));
-    let oci_location = format!("{}{}", node_root, env::var("OCI_LOCATION").expect("OCI_LOCATION"));
+    let lib_location = format!(
+        "{}{}",
+        node_root,
+        env::var("LIB_LOCATION").expect("LIB_LOCATION")
+    );
+    let config_location = format!(
+        "{}{}",
+        node_root,
+        env::var("CONFIG_LOCATION").expect("CONFIG_LOCATION")
+    );
+    let oci_location = format!(
+        "{}{}",
+        node_root,
+        env::var("OCI_LOCATION").expect("OCI_LOCATION")
+    );
 
     no_path_exit(&node_root);
     no_path_exit(&lib_location);
@@ -75,7 +87,7 @@ fn main() -> Result<(), std::io::Error> {
     Ok(())
 }
 
-fn no_path_exit(path : &str) {
+fn no_path_exit(path: &str) {
     if !Path::new(&path).exists() {
         panic!("Exiting: {} Does not exist", path);
     }
