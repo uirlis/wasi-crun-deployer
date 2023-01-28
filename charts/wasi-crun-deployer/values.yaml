@@ -19,6 +19,9 @@ job:
   isMicroK8s: false
   autoRestart: false
 
+serviceAccount:
+  create: true
+
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""

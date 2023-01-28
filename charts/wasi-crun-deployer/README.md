@@ -2,7 +2,7 @@
 
 ## OpenShift
 
-In OpenShift 4.11 the Pod Security Standards are enforced and require specific configuration as this chart requires elevated privileges to deploy.
+In OpenShift 4.11 the Pod Security Standards require specific configuration as this chart requires elevated privileges to deploy.
 
 In order to meet those privaleges create a project called wasi-deploy and run the following commands to enable pods to run in a privaleged mode:
 

@@ -12,8 +12,8 @@ pub fn copy_to(
     vendor: &str,
     file_name: &str,
 ) -> Result<(), std::io::Error> {
-    let location = format!("/{}/{}/{}", vendor_base, vendor, file_name);
-    let destination = format!("/{}/{}", destination_base, file_name);
+    let location = format!("/{vendor_base}/{vendor}/{file_name}");
+    let destination = format!("/{destination_base}/{file_name}");
     info!("Copying from {} to {}", location, destination);
     fs::copy(location, destination)?;
     Ok(())
@@ -80,7 +80,9 @@ pub fn generate_crio_config(path: &str) -> Result<toml_edit::Document, std::io::
 pub fn generate_containerd_config(path: &str) -> Result<toml_edit::Document, std::io::Error> {
     let content = std::fs::read_to_string(path)?;
 
-    let mut conf = content.parse::<Document>().expect("invalid doc");
+    let mut conf = content
+        .parse::<Document>()
+        .expect("Failed to parse containerd config");
 
     let mut poda = Array::default();
     poda.push("*.wasm.*");
@@ -116,12 +118,17 @@ pub fn restore_crio_config(path: &str) -> Result<(), std::io::Error> {
     Ok(())
 }
 
+pub fn delete_file(path: &str) -> Result<(), std::io::Error> {
+    fs::remove_file(path)?;
+    Ok(())
+}
+
 pub fn restart_oci_runtime(
     node_root: String,
     is_micro_k8s: bool,
     mut oci_runtime: String,
 ) -> Result<(), std::io::Error> {
-    let mount_path = format!("-m{}/proc/1/ns/mnt", node_root);
+    let mount_path = format!("-m{node_root}/proc/1/ns/mnt");
 
     if is_micro_k8s {
         oci_runtime = "snap.microk8s.daemon-containerd".to_string();
@@ -152,13 +159,13 @@ fn run_command_text(args: Vec<&str>, bin_path: &str) -> Result<String, String> {
     {
         Ok(v) => v,
         Err(e) => {
-            return Err(format!("failed to execute nsenter {:?} {}", args, e));
+            return Err(format!("failed to execute nsenter {args:?} {e}"));
         }
     };
     let waiter = match cmd.wait_with_output() {
         Ok(v) => v,
         Err(e) => {
-            return Err(format!("failed to execute nsenter {:?} {}", args, e));
+            return Err(format!("failed to execute nsenter {args:?} {e}"));
         }
     };
 
@@ -166,15 +173,13 @@ fn run_command_text(args: Vec<&str>, bin_path: &str) -> Result<String, String> {
     match waiter.stderr.as_slice().read_to_string(&mut err_str) {
         Err(e) => {
             return Err(format!(
-                "stderr read error - failed to execute nsenter {:?} {}",
-                args, e
+                "stderr read error - failed to execute nsenter {args:?} {e}"
             ));
         }
         Ok(_) => {
             if !err_str.is_empty() {
                 return Err(format!(
-                    "stderr not empty - failed to execute nsenter {:?} {}",
-                    args, err_str
+                    "stderr not empty - failed to execute nsenter {args:?} {err_str}"
                 ));
             }
         }
@@ -184,8 +189,7 @@ fn run_command_text(args: Vec<&str>, bin_path: &str) -> Result<String, String> {
     match waiter.stdout.as_slice().read_to_string(&mut ok_str) {
         Err(e) => {
             return Err(format!(
-                "stdout error - failed to execute nsenter {:?} {}",
-                args, e
+                "stdout error - failed to execute nsenter {args:?} {e}"
             ));
         }
         Ok(_) => Ok(ok_str),
