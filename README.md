@@ -1,5 +1,12 @@
 # wasi-crun-deployer
 
+## Development has moved to https://github.com/knawd/deployer
+
+
+
+
+
+
 A helm chart to deploy an OCI compatible runtime with Web Assembly capabilities into a kubernetes cluster to enable the developers to run `.wasm` files.
 
 [![build status](https://github.com/uirlis/wasi-crun-deployer/workflows/CI/badge.svg)](https://github.com/uirlis/wasi-crun-deployer/actions)
